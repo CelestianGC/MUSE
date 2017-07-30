@@ -11,9 +11,6 @@
 			<website></website>
 			<author>Celestian</author>
 		</description>
-		<ruleset>
-            <name>CoreRPG</name>
-		</ruleset>
 	</properties>
 
 	<announcement text="*LOADED* Map Unit Settings Extension, CoreRPG version for Fantasy Grounds\r--by Celestian 2017.07.30" font="emotefont" />
