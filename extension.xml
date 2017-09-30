@@ -4,7 +4,7 @@
 
 	<properties>
 		<name>Map Unit Settings Extension</name>
-		<version>1.2</version>
+		<version>1.3</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>With toolgrid bar enabled has option to set unit size of maps.</text>
