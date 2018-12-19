@@ -16,10 +16,14 @@ function getScaleControlisValid()
     return getScaleControlValue():find("^%d") ~= nil
 end
 function getScaleControlScaleValue()
-    return getScaleControlisValid() and tonumber(getScaleControlValue():match("^(%d+)")) or 0
+  if getScaleControlisValid() then
+    return getScaleControlValue():match("^([%d%.]+)") or 0;
+  else
+    return 0;
+  end
 end
 function getScaleControlScaleLabel()
-    return StringManager.trim(getScaleControlValue():gsub("^%d+%s*", ""))
+    return StringManager.trim(getScaleControlValue():gsub("^[%d%.]+%s*", ""))
 end
 --
 
@@ -123,21 +127,7 @@ function onPointerSnap(nStartX, nStartY, nEndX, nEndY, sPointerType)
 	local scale = hasGrid() and getGridSize() or 32
 
 	nNewStartX, nNewStartY = getClosestSnapPoint(nStartX, nStartY)
-	if sPointerType == "sw_cone" then
-		nNewEndX = 9*scale * math.sin(nAngle) + nStartX
-		nNewEndY = 9*scale * -math.cos(nAngle) + nStartY
-	elseif sPointerType == "sw_sb" then
-		nNewEndX = scale * math.sin(nAngle) + nStartX
-		nNewEndY = scale * -math.cos(nAngle) + nStartY
-	elseif sPointerType == "sw_mb" then
-		nNewEndX = 2*scale * math.sin(nAngle) + nStartX
-		nNewEndY = 2*scale * -math.cos(nAngle) + nStartY
-	elseif sPointerType == "sw_lb" then
-		nNewEndX = 3*scale * math.sin(nAngle) + nStartX
-		nNewEndY = 3*scale * -math.cos(nAngle) + nStartY
-	else
-		nNewEndX, nNewEndY = getClosestSnapPoint(nEndX, nEndY)
-	end
+	nNewEndX, nNewEndY = getClosestSnapPoint(nEndX, nEndY)
 
 	return nNewStartX, nNewStartY, nNewEndX, nNewEndY
 end
@@ -190,7 +180,6 @@ function onMeasureVector(token, aVector)
 	if hasGrid() then
 		local sGridType = getGridType()
 		local nGridSize = getGridSize()
-
 		local nDistance = 0
 		if sGridType == "hexrow" or sGridType == "hexcolumn" then
 			local nGridHexWidth, nGridHexHeight = getGridHexElementDimensions()
@@ -206,9 +195,9 @@ function onMeasureVector(token, aVector)
 		end
 
 		if getScaleControlisValid() then
-			return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel();
 		else
-			return ""
+      return ""
 		end
 	else
 		return ""
@@ -216,10 +205,6 @@ function onMeasureVector(token, aVector)
 end
 
 function onMeasurePointer(nLength, sPointerType, nStartX, nStartY, nEndX, nEndY)
-	if sPointerType == "sw_cone" or sPointerType == "sw_sb" or sPointerType == "sw_mb" or sPointerType == "sw_lb" then
-		return ""
-	end
-
 	if hasGrid() then
 		local sGridType = getGridType()
 		local nGridSize = getGridSize()
@@ -232,7 +217,7 @@ function onMeasurePointer(nLength, sPointerType, nStartX, nStartY, nEndX, nEndY)
 		end
 
 		if getScaleControlisValid() then
-			return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel();
 		else
 			return ""
 		end
@@ -253,69 +238,6 @@ function transformSpline(rSpline, nAngle, nCenterX, nCenterY)
 			rSegment[nControlPointIndex] = { nSegmentX, nSegmentY }
 		end
 	end
-end
-
-function onBuildCustomPointer(nStartX, nStartY, nEndX, nEndY, sType)
-	local aSegments = {}
-	local aDistancePosition
-	local bDrawArrow
-
-	local u = 32 / getScaleControlScaleValue()
-	if hasGrid() then
-		u = getGridSize() / getScaleControlScaleValue()
-	end
-	local nAngle = math.atan2(nEndX - nStartX, - nEndY + nStartY)
-
-	if sType == "sw_cone" then
-		-- Build a cone facing in the negative y direction
-		local segment = { { nStartX, nStartY }, { nStartX, nStartY }, { nStartX - 1.5*u, nStartY - 6.5*u }, { nStartX - 1.5*u, nStartY - 7.5*u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX - 1.5*u, nStartY - 7.5*u }, { nStartX - 1.5*u, nStartY - 8.25*u }, { nStartX - 0.75*u, nStartY - 9*u }, { nStartX, nStartY - 9*u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY }, { nStartX, nStartY }, { nStartX + 1.5*u, nStartY - 6.5*u }, { nStartX + 1.5*u, nStartY - 7.5*u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX + 1.5*u, nStartY - 7.5*u }, { nStartX + 1.5*u, nStartY - 8.25*u }, { nStartX + 0.75*u, nStartY - 9*u }, { nStartX, nStartY - 9*u } }
-		table.insert(aSegments, segment)
-
-		-- Set the distance indicator position (in pixels)
-		aDistancePosition = { 30, 30 }
-	elseif sType == "sw_sb" then
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY - 0.56*u }, { nStartX - 0.56*u, nStartY - u }, { nStartX, nStartY - u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY - u }, { nStartX + 0.56*u, nStartY - u }, { nStartX + u, nStartY - 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY + 0.56*u }, { nStartX - 0.56*u, nStartY + u }, { nStartX, nStartY + u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY + u }, { nStartX + 0.56*u, nStartY + u }, { nStartX + u, nStartY + 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-	elseif sType == "sw_mb" then
-		u = u * 2
-
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY - 0.56*u }, { nStartX - 0.56*u, nStartY - u }, { nStartX, nStartY - u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY - u }, { nStartX + 0.56*u, nStartY - u }, { nStartX + u, nStartY - 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY + 0.56*u }, { nStartX - 0.56*u, nStartY + u }, { nStartX, nStartY + u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY + u }, { nStartX + 0.56*u, nStartY + u }, { nStartX + u, nStartY + 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-	elseif sType == "sw_lb" then
-		u = u * 3
-
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY - 0.56*u }, { nStartX - 0.56*u, nStartY - u }, { nStartX, nStartY - u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY - u }, { nStartX + 0.56*u, nStartY - u }, { nStartX + u, nStartY - 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX - u, nStartY }, { nStartX - u, nStartY + 0.56*u }, { nStartX - 0.56*u, nStartY + u }, { nStartX, nStartY + u } }
-		table.insert(aSegments, segment)
-		local segment = { { nStartX, nStartY + u }, { nStartX + 0.56*u, nStartY + u }, { nStartX + u, nStartY + 0.56*u }, { nStartX + u, nStartY } }
-		table.insert(aSegments, segment)
-	end
-
-	-- Transform it to match angle
-	transformSpline(aSegments, nAngle, nStartX, nStartY)
-
-	return aSegments, aDistancePosition, bDrawArrow
 end
 
 --

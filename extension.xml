@@ -3,8 +3,8 @@
 <root version="3.0" >
 
 	<properties>
-		<name>CoreRules - Map Unit Settings Extension</name>
-		<version>1.5</version>
+		<name>CoreRPG - Map Unit Settings Extension</name>
+		<version>1.8</version>
 		<loadorder>99</loadorder>
 		<description>
 			<text>With toolgrid bar enabled has option to set unit size of maps.</text>
@@ -13,7 +13,7 @@
 		</description>
 	</properties>
 
-	<announcement text="Map Unit Settings Extension v1.5\rCoreRPG version for Fantasy Grounds\r--by Celestian 2017.07.31" font="emotefont" />
+	<announcement text="Map Unit Settings Extension v1.8\rCoreRPG version for Fantasy Grounds\r--by Celestian 2018.08.27" font="emotefont" />
 	<base>		
         <includefile source="campaign/record_image.xml" />
     </base>
