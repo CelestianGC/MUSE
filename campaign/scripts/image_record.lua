@@ -3,10 +3,6 @@
 -- attribution and copyright information.
 --
 
--- this causes problems when the map is marked read only so I went another route --celestian
--- function getScaleControl()
-    -- return window.toolbar.subwindow.scale;
--- end
 function getScaleControlValue()
     local node = getDatabaseNode().getChild("..");
     local sValue = DB.getValue(node,"scale","5ft"); -- default to 5ft here but we should never see this.
@@ -16,14 +12,10 @@ function getScaleControlisValid()
     return getScaleControlValue():find("^%d") ~= nil
 end
 function getScaleControlScaleValue()
-  if getScaleControlisValid() then
-    return getScaleControlValue():match("^([%d%.]+)") or 0;
-  else
-    return 0;
-  end
+    return getScaleControlisValid() and tonumber(getScaleControlValue():match("^(%d+)")) or 0
 end
 function getScaleControlScaleLabel()
-    return StringManager.trim(getScaleControlValue():gsub("^[%d%.]+%s*", ""))
+    return StringManager.trim(getScaleControlValue():gsub("^%d+%s*", ""))
 end
 --
 
@@ -194,9 +186,9 @@ function onMeasureVector(token, aVector)
 			end
 		end
 
-		if getScaleControlisValid() then
-      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel();
-		else
+    if getScaleControlisValid() then
+      return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+    else
       return ""
 		end
 	else
@@ -216,86 +208,12 @@ function onMeasurePointer(nLength, sPointerType, nStartX, nStartY, nEndX, nEndY)
 			nDistance = measureVector(nEndX - nStartX, nEndY - nStartY, sGridType, nGridSize)
 		end
 
-		if getScaleControlisValid() then
-      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel();
-		else
-			return ""
-		end
-	else
-		return ""
-	end
-end
-
-function transformSpline(rSpline, nAngle, nCenterX, nCenterY)
-	for _,rSegment in ipairs(rSpline) do
-		for nControlPointIndex, aControlPoint in ipairs(rSegment) do
-			local x = aControlPoint[1]
-			local y = aControlPoint[2]
-
-			local nSegmentX = (x-nCenterX) * math.cos(nAngle) - (y-nCenterY) * math.sin(nAngle) + nCenterX
-			local nSegmentY = (x-nCenterX) * math.sin(nAngle) + (y-nCenterY) * math.cos(nAngle) + nCenterY
-
-			rSegment[nControlPointIndex] = { nSegmentX, nSegmentY }
-		end
-	end
-end
-
---
--- Event functions to update imagewindow toolbar elements
---
-
-function onGridStateChanged(sGridType)
-	super.onGridStateChanged(sGridType)
-	if User.isHost() then
-		if sGridType == "hex" then
-			setTokenOrientationCount(12)
-		else
-			setTokenOrientationCount(8)
-		end
-	end
-end
-
-function onTokenClickRelease(token, button)
-	if User.isHost() and Input.isControlPressed() then
-		if button == 2 then
-			token.setScale(1)
-		end
-	end
-end
-
-function onTokenContainerChanging(token)
-	token.onMenuSelection = function () end
-	token.onClickRelease = function () end
-	token.onWheel = function ()
-			if User.isHost() and Input.isControlPressed() then
-				return true
-			end
-		end
-	token.onContainerChanging = function () end
-end
-
-function onTokenWheel(token, nNotches)
-	if User.isHost() and Input.isControlPressed() then
-		if Input.isAltPressed() then
-			ntoken.setScale(math.max(math.floor(token.getScale() + nNotches), 1))
-		else
-			token.setScale(math.max(token.getScale() + (nNotches * 0.1), 0.1))
-		end
-		return true
-	end
-end
-
-function onTokenMenuSelection(token, nOption)
-	if nOption == 2 then
-		token.setScale(1)
-	end
-end
-
-function onTokenAdded(token)
-	token.registerMenuItem("Reset individual token scaling", "minimize", 2)
-	token.onMenuSelection = onTokenMenuSelection
-
-	token.onClickRelease = onTokenClickRelease
-	token.onWheel = onTokenWheel
-	token.onContainerChanging = onTokenContainerChanging
+    if getScaleControlisValid() then
+      return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+    else
+      return ""
+    end
+  else
+    return ""
+  end
 end
