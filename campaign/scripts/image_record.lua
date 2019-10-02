@@ -9,13 +9,13 @@ function getScaleControlValue()
     return sValue;
 end
 function getScaleControlisValid()
-    return getScaleControlValue():find("^%d") ~= nil
+    return getScaleControlValue():find("^[%d%.]") ~= nil
 end
 function getScaleControlScaleValue()
-    return getScaleControlisValid() and tonumber(getScaleControlValue():match("^(%d+)")) or 0
+    return getScaleControlisValid() and tonumber(getScaleControlValue():match("^([%d%.]+)")) or 0
 end
 function getScaleControlScaleLabel()
-    return StringManager.trim(getScaleControlValue():gsub("^%d+%s*", ""))
+    return StringManager.trim(getScaleControlValue():gsub("^[%d%.]+%s*", ""))
 end
 --
 
@@ -187,7 +187,7 @@ function onMeasureVector(token, aVector)
 		end
 
     if getScaleControlisValid() then
-      return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
     else
       return ""
 		end
@@ -209,7 +209,7 @@ function onMeasurePointer(nLength, sPointerType, nStartX, nStartY, nEndX, nEndY)
 		end
 
     if getScaleControlisValid() then
-      return math.floor(nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
+      return (nDistance * getScaleControlScaleValue()) .. getScaleControlScaleLabel()
     else
       return ""
     end
