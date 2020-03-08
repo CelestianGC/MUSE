@@ -107,6 +107,7 @@ function measureVector(nVectorX, nVectorY, sGridType, nGridSize, nGridHexWidth, 
   return nDistance
 end
 
+
 -- when measuring a vector distance
 function onMeasureVector(token, aVector)
   if hasGrid() then
@@ -128,8 +129,9 @@ function onMeasureVector(token, aVector)
     end
 
     if getUnitControlisValid() then
-      --return (nDistance * getUnitControlValue()) .. getUnitControlLabel();
-      return math.floor((nDistance * getUnitControlValue()) + 0.5) .. getUnitControlLabel()
+      local sResult = string.format("%.1f %s",(nDistance * getUnitControlValue()),getUnitControlLabel());
+      --return (nDistance * getUnitControlValue()) .. getUnitControlLabel()
+      return sResult;
     else
       return ""
     end
@@ -152,7 +154,9 @@ function onMeasurePointer(nLength, sPointerType, nStartX, nStartY, nEndX, nEndY)
     end
 
     if getUnitControlisValid() then
-      return (math.floor(nDistance * getUnitControlValue() + 0.5)) .. getUnitControlLabel()
+      local sResult = string.format("%.1f %s",(nDistance * getUnitControlValue()),getUnitControlLabel());
+      --return (nDistance * getUnitControlValue()) .. getUnitControlLabel()
+      return sResult;
     else
       return ""
     end
